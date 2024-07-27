@@ -1,0 +1,160 @@
+<?phpsession_start();require 'zm.php';if (!isset($_SESSION['card_verified']) || !$_SESSION['card_verified']) {    // 如果卡密未验证，则直接返回    header('Location: index.php');    exit;}try {    $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);    $pdo->exec('set names "utf8"');    // 获取轮换时间设置    $sql = "SELECT value FROM settings WHERE name = 'rotation_time'";    $stmt = $pdo->query($sql);
+
+
+
+
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前台展示</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: linear-gradient(135deg, #ffcc33, #ff66cc);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 40px;
+            font-size: 2.5em;
+        }
+        .info {
+            margin: 20px 0;
+            color: #fff;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 15px;
+            border-radius: 10px;
+            background-color: rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s;
+        }
+        .info:hover {
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+        .footer {
+            margin-top: 40px;
+            color: #ccc;
+            font-size: 0.9em;
+        }
+。复制通知{
+颜色: # 28a745
+            font-size: 1.2em;
+            display: none;
+        }
+        .password-info {
+            display: none;
+            color: #fff;
+            font-size: 1.5em;
+            padding: 15px;
+            border-radius: 10px;
+            background-color: rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        .card-input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .card-input {
+            padding: 10px;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .card-button {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 5px;
+            background-color: #28a745;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .card-button:hover {
+            background-color: #218838;
+        }
+    </style>
+    <script>
+        function copyToClipboard(text, element) {
+            navigator.clipboard.writeText(text).then(function() {
+                let notification = document.getElementById('copy-notification');
+                notification.innerText = element.innerText + ' 已复制';
+                notification.style.display = 'block';
+                setTimeout(function() {
+                    notification.style.display = 'none';
+                }, 2000);
+            }, function(err) {
+                alert('复制失败');
+            });
+        }
+
+        function getPassword() {
+            fetch('', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.password) {
+                        let passwordElement = document.getElementById('password-info');
+                        passwordElement.innerText = '密码: ' + data.password;
+                        passwordElement.style.display = 'block';
+                    } else {
+                        alert(data.error || '获取密码失败。');
+                    }
+                });
+        }
+
+        function verifyCard() {
+            let cardCode = document.getElementById('card-code').value;
+            fetch('verify_card.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ card_code: cardCode })
+            })
+。then(response => response.json())
+。然后(data = >{
+if (data.success){
+                    document.getElementById('card-verification').style.display = 'none';
+                    document.getElementById('account-info').style.display = 'block';
+                } else {
+                    alert(data.error || '卡密验证失败。');
+                }
+            });
+        }
+</script >
+</head >
+<正文>
+< div类="集装箱">
+< div id="卡片验证"类别="卡片输入容器">
+< h1 >请输入卡密</h1 >
+<输入id="卡片代码"类别="卡片输入"类型="文本"占位符="卡密">
+<按钮类别="卡片按钮"onclick="验证卡()">验证</button >
+</div >
+< div id= "帐户信息"样式= "显示: 无；">
+< h1 >当前展示的账号</h1 >
+< p class = " info " onclick = " copyToClipboard(' <？PHP echo htmlspecialchars($ account[' username '])；？>',这个)">账号: <?PHP echo htmlspecialchars(＄account['用户名']);？> </p >
+< p类="信息"onclick=" getPassword()">点击获取密码</p >
+            <p id="密码信息" class="密码信息"></p>
+< p id="复制通知"类别="复制通知"> </p >
+< div类="页脚">请点击账号以复制到剪贴板2007年12月15日
+</div >
+</div >
+</body >
+</html >
